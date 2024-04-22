@@ -3,7 +3,9 @@ package com.bpgurugram.smartdatafetcher
 import android.app.Application
 import android.widget.Toast
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Singleton
 
+@Singleton
 @HiltAndroidApp
 class MyApplication : Application() {
 

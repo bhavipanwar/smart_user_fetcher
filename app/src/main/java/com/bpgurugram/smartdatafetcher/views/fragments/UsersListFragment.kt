@@ -1,6 +1,7 @@
 package com.bpgurugram.smartdatafetcher.views.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,8 @@ import com.bpgurugram.smartdatafetcher.viewmodel.MainViewModel
 import com.bpgurugram.smartdatafetcher.viewmodel.MainViewModelFactory
 import com.bpgurugram.smartdatafetcher.views.adapters.MyUsersRecyclerViewAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Calendar
+import javax.inject.Inject
 
 /**
  * A fragment representing a list of Items.
@@ -32,7 +35,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class UsersListFragment : Fragment() {
 
+
+    @Inject
     lateinit var mainViewModel: MainViewModel
+    @Inject
+    lateinit var userApi : UserApi
+    @Inject
     lateinit var repository: UserRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,18 +55,13 @@ class UsersListFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_users_list_list, container, false)
 
         (activity as MainActivity).showLoading()
-        var userApi = ApiClient().getApi().create(UserApi::class.java)
-        repository = UserRepository(userApi)
-        mainViewModel =
-            ViewModelProvider(this, MainViewModelFactory(repository)).get(MainViewModel::class.java)
         mainViewModel.userLiveData.observe(viewLifecycleOwner, Observer {
+
             if (view is RecyclerView) {
 
                 loadRecyclerView(view, it)
             }
         })
-
-
         return view
     }
 
@@ -85,6 +88,8 @@ class UsersListFragment : Fragment() {
 
                     }
                 })
+
+                activity?.setTitle("Users ${adapter?.itemCount?: ""}")
             } else {
                 var pos: Int = adapter?.itemCount!!
                 val userAdpater = (adapter as MyUsersRecyclerViewAdapter)
@@ -92,12 +97,14 @@ class UsersListFragment : Fragment() {
                 userAdpater.addMoreItems(userList)
                 userAdpater.notifyItemInserted(pos)
                 (activity as MainActivity).hideLoading()
+                activity?.setTitle("Users ${userAdpater.itemCount?: ""}")
                 userAdpater.enableScroll()
             }
         }
     }
 
     fun openUserDetailsFragment(item: UserListItem) {
+        Log.w("Details user view loading start is - " ,  Calendar.getInstance().time.toString())
         var action = UsersListFragmentDirections.actionUsersListFragmentToUserDetailsFragment(
             UserListItemParceable(
                 userId = item.userId.toString(),
@@ -111,7 +118,8 @@ class UsersListFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        activity?.setTitle("Users")
+
+        activity?.setTitle("Users  ${mainViewModel.getTotalUsers()?: ""}")
     }
 
 }

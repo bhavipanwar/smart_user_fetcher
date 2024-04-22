@@ -7,8 +7,9 @@ import com.bpgurugram.smartdatafetcher.models.UserList
 import com.bpgurugram.smartdatafetcher.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(var userRepository: UserRepository) : ViewModel() {
+class MainViewModel @Inject constructor(var userRepository: UserRepository) : ViewModel() {
 
     val userLiveData : LiveData<UserList>
         get() = userRepository.userLiveData
@@ -24,6 +25,11 @@ class MainViewModel(var userRepository: UserRepository) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             userRepository.getUsers()
         }
+    }
+
+    fun getTotalUsers() : Int?
+    {
+        return userLiveData.value?.size
     }
 
 }
